@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Controle de Estoque</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+
+<body>
+
+  <h2>Meu Estoque</h2>
+
+  <input id="nome" placeholder="Nome do item">
+  <input id="qtd" type="number" placeholder="Quantidade">
+  <button onclick="adicionar()">Adicionar</button>
+
+  <ul id="lista"></ul>
+
+  <!-- FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDBUeuhh-5g8CvNagoIABHAdlf0uLStNNs",
+      authDomain: "salvafest-e7aa1.firebaseapp.com",
+      projectId: "salvafest-e7aa1",
+      storageBucket: "salvafest-e7aa1.firebasestorage.app",
+      messagingSenderId: "12395267915",
+      appId: "1:12395267915:web:de89f57c482b30b21e4ace"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    let items = [];
+
+    async function salvar() {
+      await setDoc(doc(db, "estoque", "principal"), {
+        items: items
+      });
+    }
+
+    async function carregar() {
+      const docRef = doc(db, "estoque", "principal");
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        items = docSnap.data().items || [];
+      }
+
+      render();
+    }
+
+    function render() {
+      const lista = document.getElementById("lista");
+      lista.innerHTML = "";
+
+      items.forEach((item) => {
+        const li = document.createElement("li");
+        li.innerText = item.nome + " - " + item.qtd;
+        lista.appendChild(li);
+      });
+    }
+
+    window.adicionar = async function () {
+      const nome = document.getElementById("nome").value;
+      const qtd = document.getElementById("qtd").value;
+
+      items.push({ nome, qtd });
+
+      await salvar();
+      render();
+    };
+
+    window.onload = carregar;
+  </script>
+
+</body>
+</html>
